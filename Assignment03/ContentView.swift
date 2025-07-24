@@ -16,6 +16,9 @@ struct ContentView: View {
     @State private var offPeak: String = ""
     @State private var midPeak: String = ""
     
+    // Tiered Inputs
+    @State private var totalUsage: String = ""
+    
     var body: some View {
         VStack {
             Image(systemName: "globe")
