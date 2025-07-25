@@ -23,7 +23,7 @@ struct ContentView: View {
                 Form {
                     // Toggle Section
                     Section {
-                        Toggle("Tiered Pricing? Yes/ No?", isOn: $isTiered)
+                        Toggle("Tiered Pricing? YES --> ", isOn: $isTiered)
                     }
                     
                     // Input Section based on Pricing Plan
@@ -87,22 +87,25 @@ struct ContentView: View {
     
     // Calculates charges for Time-of-Use plan based on usage in three periods
     var touCharges: Double {
-        let on = Double(onPeak) ?? 0.0
-        let off = Double(offPeak) ?? 0.0
-        let mid = Double(midPeak) ?? 0.0
+        let on = max(Double(onPeak) ?? 0.0, 0.0)
+        let off = max(Double(offPeak) ?? 0.0, 0.0)
+        let mid = max(Double(midPeak) ?? 0.0, 0.0)
         return (on * 0.158) + (off * 0.076) + (mid * 0.122)
     }
     
     var onPeakAmount: Double {
-        (Double(onPeak) ?? 0.0) * 0.158
+        let value = Double(onPeak) ?? 0.0
+        return max(value, 0.0) * 0.158
     }
     
     var offPeakAmount: Double {
-        (Double(offPeak) ?? 0.0) * 0.076
+        let value = Double(offPeak) ?? 0.0
+        return max(value, 0.0) * 0.076
     }
     
     var midPeakAmount: Double {
-        (Double(midPeak) ?? 0.0) * 0.122
+        let value = Double(midPeak) ?? 0.0
+        return max(value, 0.0) * 0.122
     }
     
     // Calculates charges for Tiered plan based on total usage with a 600 kWh threshold
@@ -111,12 +114,12 @@ struct ContentView: View {
     }
     
     var tierOneCharges: Double {
-        let usage = Double(totalUsage) ?? 0.0
+        let usage = max(Double(totalUsage) ?? 0.0, 0.0)
         return min(usage, 600) * 0.093
     }
 
     var tierTwoCharges: Double {
-        let usage = Double(totalUsage) ?? 0.0
+        let usage = max(Double(totalUsage) ?? 0.0, 0.0)
         return usage > 600 ? (usage - 600) * 0.11 : 0.0
     }
     
