@@ -31,9 +31,19 @@ struct ContentView: View {
                     Section(header: Text("Tiered Plan Input")) {
                         TextField("Total usage (kWh)", text: $totalUsage)
                             .keyboardType(.decimalPad)
+                        
+                        // Results Section
+                    Section(header: Text("Consumption Charges")) {
+                        Text("Consumption Charges: $\(consumptionCharges, specifier: "%.2f")")
+                        Text("Provincial Rebate (13.1%): $\(provincialRebate, specifier: "%.2f")")
+                        Text("HST (13%): $\(hst, specifier: "%.2f")")
+                        Text("Regulatory Charges: $\(regulatoryCharges, specifier: "%.2f")")
+                        Text("Total Bill: $\(totalBill, specifier: "%.2f")")
+                            .fontWeight(.bold)
+                        }
                     }
                 } else {
-                    Section(header: Text("Time-Of-Use Inputs")) {
+                    Section(header: Text("Usage Details")) {
                         TextField("On-peak usage (kWh)", text: $onPeak)
                             .keyboardType(.decimalPad)
                         TextField("Off-peak usage (kWh)", text: $offPeak)
@@ -41,16 +51,16 @@ struct ContentView: View {
                         TextField("Mid-peak usage (kWh)", text: $midPeak)
                             .keyboardType(.decimalPad)
                     }
-                }
-                
-                // Results Section
-                Section(header: Text("Bill Details")) {
-                    Text("Consumption Charges: $\(consumptionCharges, specifier: "%.2f")")
-                    Text("Provincial Rebate (13.1%): $\(provincialRebate, specifier: "%.2f")")
-                    Text("HST (13%): $\(hst, specifier: "%.2f")")
-                    Text("Regulatory Charges: $\(regulatoryCharges, specifier: "%.2f")")
-                    Text("Total Bill: $\(totalBill, specifier: "%.2f")")
-                        .fontWeight(.bold)
+                    // Results Section
+                    Section(header: Text("Consumption Charges")) {
+                        Text("On-peak charges: $\(onPeakAmount, specifier: "%.2f")")
+                        Text("Consumption Charges: $\(consumptionCharges, specifier: "%.2f")")
+                        Text("Provincial Rebate (13.1%): $\(provincialRebate, specifier: "%.2f")")
+                        Text("HST (13%): $\(hst, specifier: "%.2f")")
+                        Text("Regulatory Charges: $\(regulatoryCharges, specifier: "%.2f")")
+                        Text("Total Bill: $\(totalBill, specifier: "%.2f")")
+                            .fontWeight(.bold)
+                    }
                 }
             }
             .navigationTitle("Energy Bill Calculator")
@@ -59,7 +69,7 @@ struct ContentView: View {
     
     // MARK: - Computed Properties
     
-    /// Calculates charges for Time-of-Use plan based on usage in three periods
+    // Calculates charges for Time-of-Use plan based on usage in three periods
     var touCharges: Double {
         let on = Double(onPeak) ?? 0.0
         let off = Double(offPeak) ?? 0.0
@@ -67,7 +77,19 @@ struct ContentView: View {
         return (on * 0.158) + (off * 0.076) + (mid * 0.122)
     }
     
-    /// Calculates charges for Tiered plan based on total usage with a 600 kWh threshold
+    var onPeakAmount: Double {
+        (Double(onPeak) ?? 0.0) * 0.158
+    }
+    
+    var offPeakAmount: Double {
+        (Double(offPeak) ?? 0.0) * 0.076
+    }
+    
+    var midPeakAmount: Double {
+        (Double(midPeak) ?? 0.0) * 0.122
+    }
+    
+    // Calculates charges for Tiered plan based on total usage with a 600 kWh threshold
     var tieredCharges: Double {
         let usage = Double(totalUsage) ?? 0.0
         if usage <= 600 {
@@ -77,27 +99,27 @@ struct ContentView: View {
         }
     }
     
-    /// Determines consumption charges based on the selected pricing plan
+    // Determines consumption charges based on the selected pricing plan
     var consumptionCharges: Double {
         isTiered ? tieredCharges : touCharges
     }
     
-    /// Calculates the provincial rebate as 13.1% of consumption charges
+    // Calculates the provincial rebate as 13.1% of consumption charges
     var provincialRebate: Double {
         0.131 * consumptionCharges
     }
     
-    /// Calculates HST as 13% of (consumption charges - provincial rebate)
+    // Calculates HST as 13% of (consumption charges - provincial rebate)
     var hst: Double {
         0.13 * (consumptionCharges - provincialRebate)
     }
     
-    /// Calculates total regulatory charges as HST - provincial rebate
+    // Calculates total regulatory charges as HST - provincial rebate
     var regulatoryCharges: Double {
         hst - provincialRebate
     }
     
-    /// Calculates the total bill as consumption charges + regulatory charges
+    // Calculates the total bill as consumption charges + regulatory charges
     var totalBill: Double {
         consumptionCharges + regulatoryCharges
     }
