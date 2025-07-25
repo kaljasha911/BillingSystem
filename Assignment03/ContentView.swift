@@ -19,52 +19,68 @@ struct ContentView: View {
     @State private var totalUsage: String = ""
     
     var body: some View {
-        NavigationView {
-            Form {
-                // Toggle Section
-                Section {
-                    Toggle("Tiered Pricing? Yes/ No?", isOn: $isTiered)
-                }
-                
-                // Input Section based on Pricing Plan
-                if isTiered {
-                    Section(header: Text("Tiered Plan Input")) {
-                        TextField("Total usage (kWh)", text: $totalUsage)
-                            .keyboardType(.decimalPad)
+            NavigationView {
+                Form {
+                    // Toggle Section
+                    Section {
+                        Toggle("Tiered Pricing? Yes/ No?", isOn: $isTiered)
+                    }
+                    
+                    // Input Section based on Pricing Plan
+                    if isTiered {
+                        Section(header: Text("Usage Details")) {
+                            TextField("Total usage (kWh)", text: $totalUsage)
+                                .keyboardType(.decimalPad)
+                        }
+                            // Results Section
+                        Section(header: Text("Consumption Charges")) {
+                            Text("Tier1 charges: $\(tierOneCharges, specifier: "%.2f")")
+                            Text("Tier2 charges: $\(tierTwoCharges, specifier: "%.2f")")
+                            Text("Total Consumption Charges: $\(consumptionCharges, specifier: "%.2f")")
+                                .foregroundStyle(.blue)
+                                .fontWeight(.bold)
+                            }
                         
+                    } else {
+                        Section(header: Text("Usage Details")) {
+                            TextField("On-peak usage (kWh)", text: $onPeak)
+                                .keyboardType(.decimalPad)
+                            TextField("Off-peak usage (kWh)", text: $offPeak)
+                                .keyboardType(.decimalPad)
+                            TextField("Mid-peak usage (kWh)", text: $midPeak)
+                                .keyboardType(.decimalPad)
+                        }
                         // Results Section
-                    Section(header: Text("Consumption Charges")) {
-                        Text("Consumption Charges: $\(consumptionCharges, specifier: "%.2f")")
-                        Text("Provincial Rebate (13.1%): $\(provincialRebate, specifier: "%.2f")")
-                        Text("HST (13%): $\(hst, specifier: "%.2f")")
-                        Text("Regulatory Charges: $\(regulatoryCharges, specifier: "%.2f")")
-                        Text("Total Bill: $\(totalBill, specifier: "%.2f")")
-                            .fontWeight(.bold)
+                        Section(header: Text("Consumption Charges")) {
+                            Text("On-peak charges: $\(onPeakAmount, specifier: "%.2f")")
+                            Text("Off-peak charges: $\(offPeakAmount, specifier: "%.2f")")
+                            Text("Mid-peak charges: $\(midPeakAmount, specifier: "%.2f")")
+                            Text("Total Consumption Charges: $\(consumptionCharges, specifier: "%.2f")")
+                                .foregroundStyle(.blue)
+                                .fontWeight(.bold)
                         }
                     }
-                } else {
-                    Section(header: Text("Usage Details")) {
-                        TextField("On-peak usage (kWh)", text: $onPeak)
-                            .keyboardType(.decimalPad)
-                        TextField("Off-peak usage (kWh)", text: $offPeak)
-                            .keyboardType(.decimalPad)
-                        TextField("Mid-peak usage (kWh)", text: $midPeak)
-                            .keyboardType(.decimalPad)
-                    }
-                    // Results Section
-                    Section(header: Text("Consumption Charges")) {
-                        Text("On-peak charges: $\(onPeakAmount, specifier: "%.2f")")
-                        Text("Consumption Charges: $\(consumptionCharges, specifier: "%.2f")")
+                    Section(header: Text("Regulatory & Tax Charges")) {
                         Text("Provincial Rebate (13.1%): $\(provincialRebate, specifier: "%.2f")")
                         Text("HST (13%): $\(hst, specifier: "%.2f")")
-                        Text("Regulatory Charges: $\(regulatoryCharges, specifier: "%.2f")")
-                        Text("Total Bill: $\(totalBill, specifier: "%.2f")")
+                        Text("Total Regulatory Charges: $\(regulatoryCharges, specifier: "%.2f")")
+                            .foregroundStyle(.blue)
                             .fontWeight(.bold)
+                        }
+                    Section(header: Text("Bill Amount")) {
+                        Text("Net Bill Amount: $\(totalBill, specifier: "%.2f")")
+                            .foregroundStyle(.red)
+                            .fontWeight(.bold)
+                        }
+                }
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text("John Smith")
+                            .font(.system(size: 17, weight: .bold))
                     }
                 }
             }
-            .navigationTitle("Energy Bill Calculator")
-        }
     }
     
     // MARK: - Computed Properties
@@ -91,12 +107,17 @@ struct ContentView: View {
     
     // Calculates charges for Tiered plan based on total usage with a 600 kWh threshold
     var tieredCharges: Double {
+        return tierOneCharges + tierTwoCharges
+    }
+    
+    var tierOneCharges: Double {
         let usage = Double(totalUsage) ?? 0.0
-        if usage <= 600 {
-            return usage * 0.093
-        } else {
-            return (600 * 0.093) + ((usage - 600) * 0.11)
-        }
+        return min(usage, 600) * 0.093
+    }
+
+    var tierTwoCharges: Double {
+        let usage = Double(totalUsage) ?? 0.0
+        return usage > 600 ? (usage - 600) * 0.11 : 0.0
     }
     
     // Determines consumption charges based on the selected pricing plan
