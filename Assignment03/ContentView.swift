@@ -3,19 +3,20 @@ import SwiftUI
 //  ContentView.swift
 //  Assignment03
 //  Created by Jashan Kalsi on 2025-07-23.
-//  Student ID: [Your Student ID Here]
+//  Student ID: 991494313
 
 struct ContentView: View {
+    // MARK: - State Variables
     
     // State variable to toggle between Tiered (true) and TOU (false) pricing plans
     @State private var isTiered: Bool = true
     
-    // TOU Inputs
+    // TOU (Time-Of-Use) Inputs
     @State private var onPeak: String = ""
     @State private var offPeak: String = ""
     @State private var midPeak: String = ""
     
-    // Tiered Input
+    // Tiered plan Input
     @State private var totalUsage: String = ""
     
     var body: some View {
@@ -23,11 +24,13 @@ struct ContentView: View {
                 Form {
                     // Toggle Section
                     Section {
+                        // Toggle to switch between Tiered and TOU pricing
                         Toggle("Tiered Pricing? YES --> ", isOn: $isTiered)
                     }
                     
-                    // Input Section based on Pricing Plan
+                    // Usage Input Section based on Pricing Plan
                     if isTiered {
+                        // If Tiered plan selected, input total usage
                         Section(header: Text("Usage Details")) {
                             TextField("Total usage (kWh)", text: $totalUsage)
                                 .keyboardType(.decimalPad)
@@ -42,6 +45,7 @@ struct ContentView: View {
                             }
                         
                     } else {
+                        // If TOU plan selected, input for three periods
                         Section(header: Text("Usage Details")) {
                             TextField("On-peak usage (kWh)", text: $onPeak)
                                 .keyboardType(.decimalPad)
@@ -50,7 +54,7 @@ struct ContentView: View {
                             TextField("Mid-peak usage (kWh)", text: $midPeak)
                                 .keyboardType(.decimalPad)
                         }
-                        // Results Section
+                        // MARK: - TOU Charges Display
                         Section(header: Text("Consumption Charges")) {
                             Text("On-peak charges: $\(onPeakAmount, specifier: "%.2f")")
                             Text("Off-peak charges: $\(offPeakAmount, specifier: "%.2f")")
@@ -60,6 +64,7 @@ struct ContentView: View {
                                 .fontWeight(.bold)
                         }
                     }
+                    // MARK: - Regulatory Charges Section
                     Section(header: Text("Regulatory & Tax Charges")) {
                         Text("Provincial Rebate (13.1%): $\(provincialRebate, specifier: "%.2f")")
                         Text("HST (13%): $\(hst, specifier: "%.2f")")
@@ -67,20 +72,22 @@ struct ContentView: View {
                             .foregroundStyle(.blue)
                             .fontWeight(.bold)
                         }
+                    // MARK: - Final Bill Section
                     Section(header: Text("Bill Amount")) {
                         Text("Net Bill Amount: $\(totalBill, specifier: "%.2f")")
                             .foregroundStyle(.red)
                             .fontWeight(.bold)
-                        }
+                    }
                 }
+                // Navigation bar setup with the help of swift.org
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .principal) {
                         Text("John Smith")
                             .font(.system(size: 17, weight: .bold))
-                    }
                 }
             }
+        }
     }
     
     // MARK: - Computed Properties
@@ -93,6 +100,7 @@ struct ContentView: View {
         return (on * 0.158) + (off * 0.076) + (mid * 0.122)
     }
     
+    // Charges for each TOU period separately
     var onPeakAmount: Double {
         let value = Double(onPeak) ?? 0.0
         return max(value, 0.0) * 0.158
@@ -108,16 +116,18 @@ struct ContentView: View {
         return max(value, 0.0) * 0.122
     }
     
-    // Calculates charges for Tiered plan based on total usage with a 600 kWh threshold
+    // Tiered charges = Tier 1 + Tier 2, based on usage with a 600 kWh threshold
     var tieredCharges: Double {
         return tierOneCharges + tierTwoCharges
     }
     
+    // Tier 1 rate applies for usage up to 600 kWh
     var tierOneCharges: Double {
         let usage = max(Double(totalUsage) ?? 0.0, 0.0)
         return min(usage, 600) * 0.093
     }
 
+    // Tier 2 rate applies for usage beyond 600 kWh
     var tierTwoCharges: Double {
         let usage = max(Double(totalUsage) ?? 0.0, 0.0)
         return usage > 600 ? (usage - 600) * 0.11 : 0.0
@@ -149,6 +159,7 @@ struct ContentView: View {
     }
 }
 
+// MARK: - Preview Provider
 #Preview {
     ContentView()
 }
